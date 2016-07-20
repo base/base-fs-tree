@@ -1,28 +1,26 @@
 {
   "name": "base-fs-tree",
   "description": "Base plugin for creating file trees using archy. Requires the base-fs plugin, but can also be used as a gulp plugin.",
-  "version": "0.1.0",
-  "homepage": "https://github.com/jonschlinkert/base-fs-tree",
+  "version": "0.1.1",
+  "homepage": "https://github.com/node-base/base-fs-tree",
   "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
-  "repository": "jonschlinkert/base-fs-tree",
+  "repository": "node-base/base-fs-tree",
   "bugs": {
-    "url": "https://github.com/jonschlinkert/base-fs-tree/issues"
+    "url": "https://github.com/node-base/base-fs-tree/issues"
   },
   "license": "MIT",
+  "files": [
+    "index.js",
+    "LICENSE",
+    "README.md"
+  ],
+  "main": "index.js",
   "engines": {
     "node": ">=0.10.0"
   },
   "scripts": {
     "test": "mocha"
   },
-  "keywords": [
-    "archy",
-    "base",
-    "file",
-    "files",
-    "fs",
-    "tree"
-  ],
   "dependencies": {
     "archy": "^1.0.0",
     "extend-shallow": "^2.0.1",
@@ -40,6 +38,26 @@
     "vinyl-fs": "^2.4.3",
     "yargs-parser": "^2.4.1"
   },
+  "keywords": [
+    "api",
+    "app",
+    "application",
+    "archy",
+    "base",
+    "baseplugin",
+    "building-blocks",
+    "create",
+    "file",
+    "files",
+    "framework",
+    "fs",
+    "plugin",
+    "plugins",
+    "tool",
+    "toolkit",
+    "tools",
+    "tree"
+  ],
   "verb": {
     "reflinks": [
       "assemble",
