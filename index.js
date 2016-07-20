@@ -43,7 +43,11 @@ module.exports.capture = function(options) {
     if (options.tree !== false) {
       addFile(cache, file, options);
     }
-    next(null, file);
+    if (options.treeOnly === true) {
+      next();
+    } else {
+      next(null, file);
+    }
   });
 };
 
@@ -69,6 +73,7 @@ module.exports.create = function(options) {
 function addFile(tree, file, options) {
   if (file._added) return;
   file._added = true;
+  options = options || {};
   if (typeof options.filter === 'function' && !options.filter(file)) {
     return;
   }
