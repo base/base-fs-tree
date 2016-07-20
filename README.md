@@ -4,7 +4,7 @@
 var tree = require('base-fs-tree');
 ```
 
-### gulp example
+### gulp plugin example
 
 The following examples will work with [base-fs][], [gulp][], [verb][], [assemble][], [generate][], [update][] or any other application that supports vinyl streams.
 
@@ -58,8 +58,34 @@ gulp.task('default', function(cb) {
 });
 ```
 
+### base plugin example
+
+This can also be used as a _non-pipeline_ plugin with [base][] applications. It works by adding `.preWrite` middleware and a `taskEnd` listener, so that anytime `taskEnd` is emitted, a tree will be automatically generates.
+
+This can be useful when you want to automatically generate trees for all tasks in a [generate][] generator, for example.
+
+```js
+var tree = require('base-fs-tree');
+var vfs = require('base-fs');
+var Base = require('base');
+var base = new Base();
+base.use(vfs());
+base.use(tree());
+
+app.task('default', function(cb) {
+  app.src('some-files/**/*.*')
+    .pipe(app.dest('trees'))
+    .on('end', function() {
+      // emit `taskEnd` with the name of the task
+      app.emit('taskEnd', 'default');
+      cb();
+    });
+});
+```
+
 [assemble]: https://github.com/assemble/assemble
 [base-fs]: https://github.com/node-base/base-fs
+[base]: https://github.com/node-base/base
 [generate]: https://github.com/generate/generate
 [gulp]: http://gulpjs.com
 [update]: https://github.com/update/update
