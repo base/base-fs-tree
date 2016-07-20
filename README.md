@@ -1,0 +1,66 @@
+## Usage
+
+```js
+var tree = require('base-fs-tree');
+```
+
+### gulp example
+
+The following examples will work with [base-fs][], [gulp][], [verb][], [assemble][], [generate][], [update][] or any other application that supports vinyl streams.
+
+```js
+var tree = require('base-fs-tree');
+var gulp = require('gulp');
+
+gulp.task('default', function(cb) {
+  return gulp.src('some-files/**/*.*')
+    .pipe(tree.create())
+    .pipe(gulp.dest('trees'))
+});
+```
+
+**Get files before they're modified**
+
+If you want to create a tree from the _original_ unmodified source file paths, use `.capture()` first thing in the stream:
+
+```js
+var tree = require('base-fs-tree');
+var gulp = require('gulp');
+
+gulp.task('default', function(cb) {
+  return gulp.src('some-files/**/*.*')
+    .pipe(tree.capture()) //<= capture files
+
+    // gulp plugin pipeline
+    .pipe(otherPlugins())
+    .pipe(gulp.dest('dist')) 
+
+    .pipe(tree.create()) //<= create tree
+    .pipe(gulp.dest('trees'))
+});
+```
+
+### Command line tips
+
+You can conditionally generate trees using a command line flag, like `--tree`.
+
+```js
+var tree = require('base-fs-tree');
+var gulp = require('gulp');
+var argv = require('yargs-parser')(process.argv.slice(2), {
+  default: {tree: false}
+});
+
+gulp.task('default', function(cb) {
+  return gulp.src('some-files/**/*.*')
+    .pipe(tree.create(argv))
+    .pipe(gulp.dest('trees'))
+});
+```
+
+[assemble]: https://github.com/assemble/assemble
+[base-fs]: https://github.com/node-base/base-fs
+[generate]: https://github.com/generate/generate
+[gulp]: http://gulpjs.com
+[update]: https://github.com/update/update
+[verb]: https://github.com/verbose/verb
