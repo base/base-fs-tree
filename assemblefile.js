@@ -1,34 +1,69 @@
 'use strict';
 
-var tree = require('./');
-var merge = require('mixin-deep');
-var questions = require('base-questions');
+var path = require('path');
+var argv = require('yargs-parser')(process.argv.slice(2), {default: {tree: false}});
+var tree = require('./')({name: 'assemblefile', tree: true});
+var del = require('delete');
+var handle = require('assemble-handle');
+var gitignore = require('gulp-gitignore');
 var assemble = require('assemble');
+var through = require('through2');
 var app = assemble();
-app.use(questions());
-app.use(tree());
 
-app.question('title', 'Page title?');
-app.option('engine', 'hbs');
-app.data({site: {title: 'My Blog', description: 'Um, my blog'}});
+app.handler('prePlugins');
+app.use(tree);
 
-app.helper('default', function(a, b) {
-  return a || b;
+app.task('delete', function(cb) {
+  del('trees', cb);
 });
 
-app.task('default', function(cb) {
-  app.layouts('fixtures/templates/hbs/layouts/*.hbs');
-  return app.src('fixtures/templates/**/*.*', {dot: true})
+app.task('other', function(cb) {
+  return app.src('other/**/*.*', {dot: true})
+    .pipe(gitignore())
+    .pipe(handle.once(app, 'prePlugins'))
     .pipe(app.dest(function(file) {
+      file.writeFile = false;
+      file.extname = '.html';
+      return 'fixtures/other';
+    }))
+    .on('end', createTree(app, this, cb));
+    // .on('end', function() {
+    //   app.createTrees({name: 'other', dest: 'trees'});
+    //   cb();
+    // });
+});
+
+app.task('default', ['delete', 'other'], function(cb) {
+  app.layouts('fixtures/templates/hbs/layouts/*.hbs');
+  app.src('fixtures/templates/**/*.*', {dot: true})
+    .pipe(gitignore())
+    .pipe(handle.once(app, 'prePlugins'))
+    .pipe(app.dest(function(file) {
+      file.writeFile = false;
       file.extname = '.html';
       return 'dist';
     }))
+    .on('end', createTree(app, this, cb));
 });
 
 app.task('tree', function(cb) {
-  return app.src('fixtures/**/*')
+  return app.src('fixtures/**/*.*', {dot: true})
+    .pipe(gitignore())
+    .pipe(handle.once(app, 'prePlugins'))
+    .pipe(through.obj(function(file, enc, next) {
+      file.extname = '.foo';
+      next(null, file);
+    }))
     .pipe(tree.create())
-    .pipe(app.dest('foo'))
+    .pipe(app.dest('trees'));
 });
+
+function createTree(app, task, cb) {
+  var dest = app.option.tree || path.join(app.cwd, 'trees');
+  return function() {
+    app.createTrees({name: task.name, dest: dest});
+    cb();
+  }
+}
 
 module.exports = app;
