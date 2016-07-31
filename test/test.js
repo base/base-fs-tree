@@ -29,7 +29,7 @@ describe('tree()', function() {
       .on('end', function() {
         assert.equal(buffer.length, 2);
         assert.equal(buffer[0].basename, 'default-dest.txt');
-        assert(isMatch(/fixtures/, buffer[0]));
+        assert(isMatch(/templates/, buffer[0]));
         assert(isMatch(/index\.ejs/, buffer[0]));
         assert(isMatch(/index\.hbs/, buffer[0]));
 
@@ -55,7 +55,7 @@ describe('tree()', function() {
       .on('end', function() {
         assert.equal(buffer.length, 2);
         assert.equal(buffer[0].basename, 'default-dest.txt');
-        assert(isMatch(/fixtures/, buffer[0]));
+        assert(isMatch(/templates/, buffer[0]));
         assert(isMatch(/index\.foo/, buffer[0]));
         assert(isMatch(/index\.foo/, buffer[0]));
 
@@ -83,7 +83,7 @@ describe('tree()', function() {
         assert.equal(buffer.length, 2);
 
         assert.equal(buffer[0].basename, 'default-dest.txt');
-        assert(isMatch(/fixtures/, buffer[0]));
+        assert(isMatch(/templates/, buffer[0]));
         assert(isMatch(/index\.foo/, buffer[0]));
         assert(isMatch(/index\.foo/, buffer[0]));
 
