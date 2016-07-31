@@ -48,7 +48,6 @@ module.exports = function(config) {
     });
 
     app.define('createTrees', function(options) {
-      console.log(this.env)
       var opts = extend({name: 'default'}, config, app.options, options);
       if (opts.tree !== false) {
         writeFile(cache, 'dest', namespace, opts);
@@ -193,15 +192,15 @@ function create(tree, options) {
 }
 
 function addBranch(tree, path) {
-  var segs = path.split(/[\\\/]/);
+  var segs = path.split(/[\\\/]+/);
   var len = segs.length;
-  var end = len - 1;
   var idx = -1;
+
   while (++idx < len) {
-    if (idx === end) {
-      tree[segs[idx]] = null;
-    } else if (!tree[segs[idx]]) {
+    if (!tree[segs[idx]]) {
       tree[segs[idx]] = {};
+    } else if (idx === len - 1) {
+      tree[segs[idx]] = null;
     }
     tree = tree[segs[idx]];
   }
