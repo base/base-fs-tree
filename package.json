@@ -12,7 +12,8 @@
   "files": [
     "index.js",
     "LICENSE",
-    "README.md"
+    "README.md",
+    "utils.js"
   ],
   "main": "index.js",
   "engines": {
@@ -28,7 +29,9 @@
     "file-contents": "^0.3.2",
     "is-valid-app": "^0.2.0",
     "isobject": "^2.1.0",
+    "lazy-cache": "^2.0.1",
     "through2": "^2.0.1",
+    "trim-leading-lines": "^0.1.1",
     "vinyl": "^1.2.0",
     "write": "^0.3.1"
   },
@@ -74,19 +77,19 @@
     ],
     "related": {
       "list": [
-        "base-fs-conflicts",
         "base-fs",
+        "base-fs-conflicts",
         "base-task"
       ]
     },
     "reflinks": [
       "assemble",
+      "base",
       "base-fs",
       "generate",
       "gulp",
       "update",
       "verb",
-      "base",
       "verb-generate-readme"
     ],
     "lint": {

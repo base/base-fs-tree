@@ -1,15 +1,7 @@
 'use strict';
 
 var path = require('path');
-var archy = require('archy');
-var clone = require('clone-deep');
-var isValid = require('is-valid-app');
-var isObject = require('isobject');
-var contents = require('file-contents');
-var extend = require('extend-shallow');
-var through = require('through2');
-var write = require('write');
-var File = require('vinyl');
+var utils = require('./utils');
 var cache;
 
 /**
@@ -23,12 +15,19 @@ module.exports = function(config) {
   cache[namespace] = cache[namespace] || {src: {}, dest: {}};
 
   function plugin(app) {
-    if (!isValid(app, 'base-fs-tree')) return;
-    app.create('tree', {viewType: 'partial'});
+    if (!utils.isValid(app, 'base-fs-tree')) return;
+
+    /**
+     * Create a `tree` view collection if one doesn't already exist
+     */
+
+    if (typeof app.tree !== 'function') {
+      app.create('tree', {viewType: 'partial'});
+    }
 
     var method = app.prePlugins ? 'prePlugins' : 'onStream';
     app[method](/./, function(file, next) {
-      var opts = extend({}, config, app.options);
+      var opts = utils.extend({}, config, app.options);
       if (opts.tree !== false && !file.isTree) {
         addFile(cache[namespace], file, {}, 'src');
       }
@@ -36,13 +35,13 @@ module.exports = function(config) {
     });
 
     app.preWrite(/./, function(file, next) {
-      var opts = extend({}, config, app.options);
+      var opts = utils.extend({}, config, app.options);
       file.writeFile = !opts.treeOnly && file.isTree;
       next();
     });
 
     app.postWrite(/./, function(file, next) {
-      var opts = extend({}, config, app.options);
+      var opts = utils.extend({}, config, app.options);
       if (opts.tree !== false && !file.isTree) {
         addFile(cache[namespace], file, {}, 'dest');
       }
@@ -50,7 +49,7 @@ module.exports = function(config) {
     });
 
     app.define('createTrees', function(options) {
-      var opts = extend({name: 'default'}, config, app.options, options);
+      var opts = utils.extend({name: 'default'}, config, app.options, options);
       if (opts.tree !== false) {
         writeFile(app, cache, 'dest', namespace, opts);
         writeFile(app, cache, 'src', namespace, opts);
@@ -67,17 +66,17 @@ module.exports = function(config) {
   };
 
   plugin.capture = function(name, options) {
-    if (isObject(name)) {
+    if (utils.isObject(name)) {
       options = name;
       name = null;
     }
-    var opts = extend({name: name || 'default'}, config, options);
+    var opts = utils.extend({name: name || 'default'}, config, options);
     var prop = opts.name;
 
     cache = cache || {};
     cache[prop] = {src: {}, dest: {}};
 
-    return through.obj(function(file, enc, next) {
+    return utils.through.obj(function(file, enc, next) {
       if (opts.tree !== false) {
         file._isCaptured = true;
         addFile(cache[prop], file, opts, 'src');
@@ -88,18 +87,18 @@ module.exports = function(config) {
   };
 
   plugin.create = function(name, options) {
-    if (isObject(name)) {
+    if (utils.isObject(name)) {
       options = name;
       name = null;
     }
 
-    var opts = extend({name: name || 'default'}, config, options);
+    var opts = utils.extend({name: name || 'default'}, config, options);
     var prop = opts.name;
 
     cache = cache || {};
     cache[prop] || (cache[prop] = {src: {}, dest: {}});
 
-    return through.obj(function(file, enc, next) {
+    return utils.through.obj(function(file, enc, next) {
       if (opts.tree !== false) {
         if (!file._isCaptured) {
           addFile(cache[prop], file, opts, 'src');
@@ -110,18 +109,22 @@ module.exports = function(config) {
       next();
     }, function(next) {
       if (opts.tree !== false) {
-        createFile(this, cache[prop], 'dest', prop, opts);
-        createFile(this, cache[prop], 'src', prop, opts);
+        this.push(createFile(cache[prop], 'dest', prop, opts));
+        this.push(createFile(cache[prop], 'src', prop, opts));
         cache[prop] = cache[prop] = {src: {}, dest: {}};
       }
       next();
     });
   };
 
-  function createFile(stream, tree, name, prop, options) {
-    var opts = extend({}, options);
+  /**
+   * Create a file
+   */
+
+  function createFile(tree, name, prop, options) {
+    var opts = utils.extend({}, options);
     var str = create(tree[name], {label: 'cwd'});
-    var file = new File({path: `${prop}-${name}.txt`, contents: new Buffer(str)});
+    var file = new utils.File({path: `${prop}-${name}.txt`, contents: new Buffer(str)});
 
     if (typeof opts.treename === 'function') {
       opts.treename(file);
@@ -130,12 +133,12 @@ module.exports = function(config) {
     file.render = false;
     file.layout = null;
     file.isTree = true;
-    contents.sync(file);
-    stream.push(file);
+    utils.contents.sync(file);
+    return file;
   }
 
   function writeFile(app, tree, prop, namespace, options) {
-    var opts = extend({label: 'cwd'}, config, options);
+    var opts = utils.extend({label: 'cwd'}, config, options);
     app.emit('tree', namespace, opts.name, prop, tree);
 
     var obj = tree[namespace][prop];
@@ -146,8 +149,8 @@ module.exports = function(config) {
       destPath = path.resolve(opts.dest, destPath);
     }
 
-    var file = new File({path: destPath, contents: new Buffer(str)});
-    contents.sync(file);
+    var file = new utils.File({path: destPath, contents: new Buffer(str)});
+    utils.contents.sync(file);
 
     if (typeof opts.treename === 'function') {
       opts.treename(file);
@@ -161,18 +164,18 @@ module.exports = function(config) {
     destPath = path.resolve(destBase, file.path);
 
     if (prop === 'dest') {
-      var keys = Object.keys(clone(obj[opts.label]));
+      var keys = Object.keys(utils.clone(obj[opts.label]));
       app.tree(opts.name, {contents: new Buffer(str), tree: keys});
     }
 
     if (opts.write !== false) {
-      write.sync(destPath, file.contents.toString());
+      utils.write.sync(destPath, file.contents.toString());
     }
   }
 
   function addFile(tree, file, options, name) {
     if (isCached(file, name)) return;
-    var opts = extend({label: 'cwd', prefix: ' '}, options);
+    var opts = utils.extend({label: 'cwd', prefix: ' '}, options);
     var cwd = typeof opts.cwd === 'string' ? opts.cwd : process.cwd();
     var relative = path.relative(cwd, file.path);
     if (name === 'dest') {
@@ -202,11 +205,11 @@ function isCached(file, name) {
 }
 
 function create(tree, options) {
-  var opts = extend({label: 'cwd', prefix: ' '}, options);
+  var opts = utils.extend({label: 'cwd', prefix: ' '}, options);
   var obj = tree[opts.label] || tree.cwd;
   var archytree = createTree(obj, {}, opts.label);
-  var str = archy(archytree, opts.prefix, opts);
-  return str.replace(/^[^\n]+/, '.');
+  var str = utils.archy(archytree, opts.prefix, opts);
+  return str.replace(/^[^\n]+/, ' .');
 }
 
 function addBranch(tree, path) {
@@ -238,7 +241,7 @@ function compare(app, views, fn) {
     throw new Error('expected a "default" task to be defined');
   }
 
-  var lines = toFilenames(views.default.content);
+  var lines = utils.toFilenames(views.default.content);
   var str = '';
 
   for (var key in views) {
@@ -265,7 +268,7 @@ function compare(app, views, fn) {
 
 function diff(defaultView, lines, content) {
   var orig = content.split('\n');
-  var arr = toFilenames(content);
+  var arr = utils.toFilenames(content);
   var temp = arr.slice();
   var len = arr.length;
   var idx = -1;
@@ -288,19 +291,7 @@ function diff(defaultView, lines, content) {
     }
   }
 
-  return arr.join('\n').trim();
-}
-
-function toFilenames(str) {
-  return str.split('\n').map(function(line) {
-    return sanitize(line);
-  });
-}
-
-function sanitize(str) {
-  if (str === '.' || !str || /^\s+$/.test(str)) return str;
-  var m = /[-.\w_]+/g.exec(str);
-  return m ? m[0] : str;
+  return utils.trim(arr.join('\n'));
 }
 
 /**

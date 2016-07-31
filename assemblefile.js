@@ -1,7 +1,6 @@
 'use strict';
 
 var path = require('path');
-var argv = require('yargs-parser')(process.argv.slice(2), {default: {tree: false}});
 var tree = require('./')({name: 'assemblefile', tree: true});
 var del = require('delete');
 var handle = require('assemble-handle');
@@ -63,7 +62,7 @@ function createTree(app, task, cb) {
   return function() {
     app.createTrees({name: task.name, dest: dest});
     cb();
-  }
+  };
 }
 
 module.exports = app;
