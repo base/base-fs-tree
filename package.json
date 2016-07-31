@@ -1,7 +1,7 @@
 {
   "name": "base-fs-tree",
   "description": "Base plugin for creating file trees using archy. Requires the base-fs plugin, but can also be used as a gulp plugin.",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "homepage": "https://github.com/node-base/base-fs-tree",
   "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
   "repository": "node-base/base-fs-tree",
