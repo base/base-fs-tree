@@ -5,7 +5,7 @@ var path = require('path');
 var vfs = require('vinyl-fs');
 var assert = require('assert');
 var through = require('through2');
-var fsTree = require('./');
+var fsTree = require('../');
 var tree;
 
 var cwd = path.resolve.bind(path, __dirname, 'fixtures');
