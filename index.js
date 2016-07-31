@@ -126,7 +126,6 @@ module.exports = function(config) {
     if (typeof opts.treename === 'function') {
       opts.treename(file);
     }
-
     file.writeFile = true;
     file.render = false;
     file.layout = null;
@@ -235,6 +234,10 @@ function createTree(tree, obj, label) {
 }
 
 function compare(app, views, fn) {
+  if (typeof views.default === 'undefined') {
+    throw new Error('expected a "default" task to be defined');
+  }
+
   var lines = toFilenames(views.default.content);
   var str = '';
 
