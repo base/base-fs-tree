@@ -164,7 +164,12 @@ function addFile(tree, file, options, name) {
   if (isCached(file, name)) return;
   var opts = extend({label: 'cwd', prefix: ''}, options);
   var cwd = typeof opts.cwd === 'string' ? opts.cwd : process.cwd();
-  addBranch(tree[name], path.join(opts.label, path.relative(cwd, file.path)));
+  var relative = path.relative(cwd, file.path);
+  if (name === 'dest') {
+    relative = file.relative;
+  }
+  var filepath = path.join(opts.label, relative);
+  addBranch(tree[name], filepath);
 }
 
 function isCached(file, name) {
