@@ -15,7 +15,7 @@ require('file-contents', 'contents');
 require('is-valid-app', 'isValid');
 require('isobject', 'isObject');
 require('through2', 'through');
-require('trim-leading-lines');
+require('trim-leading-lines', 'trim');
 require('vinyl', 'File');
 require('write');
 require = fn;
