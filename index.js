@@ -267,7 +267,7 @@ function compare(app, views, fn) {
       str += '\n';
       str += '\n```diff\n';
       str += view.treeDiff;
-      str += '\n```\n';
+      str += '```\n';
     }
   }
   return str;
@@ -282,6 +282,7 @@ function createSrcTrees(app, views, fn) {
       if (typeof fn === 'function') {
         fn(view);
       }
+
       str += '\n### ' + view.stem;
       str += '\n';
       str += '\n';
@@ -289,7 +290,7 @@ function createSrcTrees(app, views, fn) {
       str += '\n';
       str += '\n```diff\n';
       str += view.content;
-      str += '\n```\n';
+      str += '```\n';
     }
   }
   return str;
