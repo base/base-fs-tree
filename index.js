@@ -24,6 +24,9 @@ module.exports = function(config) {
     if (typeof app.tree !== 'function') {
       app.create('tree', {viewType: 'partial'});
     }
+    if (typeof app.srcTree !== 'function') {
+      app.create('srcTree', {viewType: 'partial'});
+    }
 
     var method = app.prePlugins ? 'prePlugins' : 'onStream';
     app[method](/./, function(file, next) {
@@ -59,7 +62,11 @@ module.exports = function(config) {
     });
 
     app.define('compareTrees', function(fn) {
-      return compare(this, app.views.trees, fn);
+      return compare(this, app.trees.views, fn);
+    });
+
+    app.define('createSrcTrees', function(fn) {
+      return createSrcTrees(this, app.srcTrees.views, fn);
     });
 
     return plugin;
@@ -139,8 +146,6 @@ module.exports = function(config) {
 
   function writeFile(app, tree, prop, namespace, options) {
     var opts = utils.extend({label: 'cwd'}, config, options);
-    app.emit('tree', namespace, opts.name, prop, tree);
-
     var obj = tree[namespace][prop];
     var str = create(obj, {label: namespace});
 
@@ -166,6 +171,8 @@ module.exports = function(config) {
     if (prop === 'dest') {
       var keys = Object.keys(utils.clone(obj[opts.label]));
       app.tree(opts.name, {contents: new Buffer(str), tree: keys});
+    } else {
+      app.srcTree(opts.name, {contents: new Buffer(str)});
     }
 
     if (opts.write !== false) {
@@ -264,7 +271,29 @@ function compare(app, views, fn) {
     }
   }
   return str;
-};
+}
+
+function createSrcTrees(app, views, fn) {
+  var str = '';
+  for (var key in views) {
+    if (views.hasOwnProperty(key)) {
+      var view = views[key];
+
+      if (typeof fn === 'function') {
+        fn(view);
+      }
+      str += '\n### ' + view.stem;
+      str += '\n';
+      str += '\n';
+      str += `Source files used by the [${view.stem} task](#${view.stem}):`;
+      str += '\n';
+      str += '\n```diff\n';
+      str += view.content;
+      str += '\n```\n';
+    }
+  }
+  return str;
+}
 
 function diff(defaultView, lines, content) {
   var orig = content.split('\n');
