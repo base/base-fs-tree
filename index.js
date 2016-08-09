@@ -182,12 +182,18 @@ module.exports = function(config) {
 
   function addFile(tree, file, options, name) {
     if (isCached(file, name)) return;
+    if (isIgnored(file)) return;
+
     var opts = utils.extend({label: 'cwd', prefix: ' '}, options);
-    var cwd = typeof opts.cwd === 'string' ? opts.cwd : process.cwd();
-    var relative = path.relative(cwd, file.path);
+    var cwd = typeof opts.cwd === 'string'
+      ? path.resolve(opts.cwd)
+      : process.cwd();
+
+    var relative = path.relative(cwd, path.resolve(file.history[0]));
     if (name === 'dest') {
       relative = file.relative;
     }
+
     var filepath = path.join(opts.label, relative);
     addBranch(tree[name], filepath);
   }
@@ -209,6 +215,10 @@ function isCached(file, name) {
   }
   file._added = true;
   return false;
+}
+
+function isIgnored(file) {
+  return /(\.DS_Store|Thumbs\.db)/i.test(file.path);
 }
 
 function create(tree, options) {
@@ -286,7 +296,7 @@ function createSrcTrees(app, views, fn) {
       str += '\n### ' + view.stem;
       str += '\n';
       str += '\n';
-      str += `Source files used by the [${view.stem} task](#${view.stem}):`;
+      str += `Source files and/or libraries used by the [${view.stem} task](#${view.stem}):`;
       str += '\n';
       str += '\n```diff\n';
       str += view.content;

@@ -61,8 +61,8 @@ describe('tree()', function() {
 
         assert.equal(buffer[1].basename, 'default-src.txt');
         assert(isMatch(/fixtures/, buffer[1]));
-        assert(isMatch(/index\.foo/, buffer[1]));
-        assert(isMatch(/index\.foo/, buffer[1]));
+        assert(isMatch(/index\.ejs/, buffer[1]));
+        assert(isMatch(/index\.hbs/, buffer[1]));
         cb();
       });
   });
